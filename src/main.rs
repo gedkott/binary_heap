@@ -1,5 +1,3 @@
-use std::mem;
-
 fn main() {
     println!("Hello, world!");
 }
