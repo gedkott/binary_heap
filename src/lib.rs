@@ -1,4 +1,6 @@
-use std::ops::{Deref, DerefMut};
+use std::{
+    ops::{Deref, DerefMut},
+};
 
 // I think the reason the std lib uses this smart pointer for peek mut
 // is to avoid sifting if the value was derefed but not mutated, but that
@@ -33,6 +35,7 @@ impl<T: PartialOrd> Drop for SmartHeapMutatingPointer<'_, T> {
     fn drop(&mut self) {
         if self.needs_sifting {
             self.heap.sift_down(0);
+        } else {
         }
     }
 }
@@ -42,6 +45,12 @@ where
     T: PartialOrd,
 {
     items: Vec<T>,
+}
+
+impl<T: PartialOrd> Default for BinaryHeap<T> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T> BinaryHeap<T>
