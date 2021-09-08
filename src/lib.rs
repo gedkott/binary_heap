@@ -22,7 +22,7 @@ impl<T: PartialOrd> DerefMut for SmartHeapMutatingPointer<'_, T> {
         // need to sift down the max value just in case its changed
         // to a value that lowers its value
         self.needs_sifting = true;
-        self.heap.heap.get_mut(0).unwrap()
+        self.heap.items.get_mut(0).unwrap()
     }
 }
 
@@ -41,7 +41,7 @@ pub struct BinaryHeap<T>
 where
     T: PartialOrd,
 {
-    heap: Vec<T>,
+    items: Vec<T>,
 }
 
 impl<T> BinaryHeap<T>
@@ -49,20 +49,20 @@ where
     T: PartialOrd,
 {
     pub fn new() -> Self {
-        BinaryHeap { heap: vec![] }
+        BinaryHeap { items: vec![] }
     }
 
     pub fn heap(&self) -> impl std::iter::Iterator<Item = &T> {
-        self.heap.iter()
+        self.items.iter()
     }
 
     pub fn push(&mut self, value: T) {
-        self.heap.push(value);
+        self.items.push(value);
         self.sift_up();
     }
 
     pub fn peek(&self) -> Option<&T> {
-        self.heap.get(0)
+        self.items.get(0)
     }
 
     pub fn peek_mut(&mut self) -> Option<SmartHeapMutatingPointer<T>> {
@@ -77,9 +77,9 @@ where
     }
 
     pub fn pop(&mut self) -> Option<T> {
-        let len = self.heap.len();
-        self.heap.swap(0, len - 1);
-        let largest = self.heap.pop();
+        let len = self.items.len();
+        self.items.swap(0, len - 1);
+        let largest = self.items.pop();
 
         // now sift the topmost element down until its in the right place
         self.sift_down(0);
@@ -88,21 +88,24 @@ where
     }
 
     pub fn delete(&mut self, item: T) -> Option<T> {
-        self.heap.iter().position(|t| item == *t).and_then(|index| {
-            let len = self.heap.len();
-            self.heap.swap(index, len - 1);
-            let deleted = self.heap.pop();
-            self.sift_down(index);
-            deleted
-        })
+        self.items
+            .iter()
+            .position(|t| item == *t)
+            .and_then(|index| {
+                let len = self.items.len();
+                self.items.swap(index, len - 1);
+                let deleted = self.items.pop();
+                self.sift_down(index);
+                deleted
+            })
     }
 
     pub fn clear(&mut self) {
-        self.heap.clear()
+        self.items.clear()
     }
 
     pub fn len(&self) -> usize {
-        self.heap.len()
+        self.items.len()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -126,17 +129,17 @@ where
         //     }
         // }
 
-        let mut index_of_swimmer = self.heap.len() - 1;
+        let mut index_of_swimmer = self.items.len() - 1;
         let mut index_of_parent = (f64::floor((index_of_swimmer as f64 - 1.0) / 2.0)) as usize;
-        let mut swimmer_value = &self.heap[index_of_swimmer];
-        let mut parent_value = &self.heap[index_of_parent];
+        let mut swimmer_value = &self.items[index_of_swimmer];
+        let mut parent_value = &self.items[index_of_parent];
         while swimmer_value > parent_value {
             // swap swimmer with parent and then do it again
-            self.heap.swap(index_of_parent, index_of_swimmer);
+            self.items.swap(index_of_parent, index_of_swimmer);
             index_of_swimmer = index_of_parent;
             index_of_parent = (f64::floor((index_of_swimmer as f64 - 1.0) / 2.0)) as usize;
-            swimmer_value = &self.heap[index_of_swimmer];
-            parent_value = &self.heap[index_of_parent];
+            swimmer_value = &self.items[index_of_swimmer];
+            parent_value = &self.items[index_of_parent];
         }
     }
 
@@ -144,10 +147,10 @@ where
         let left_child_index = 2 * start_index + 1;
         let right_child_index = 2 * start_index + 2;
 
-        let left_child_value = self.heap.get(left_child_index);
-        let right_child_value = self.heap.get(right_child_index);
+        let left_child_value = self.items.get(left_child_index);
+        let right_child_value = self.items.get(right_child_index);
 
-        let mut largest_value = self.heap.get(start_index);
+        let mut largest_value = self.items.get(start_index);
         let mut largest_index = start_index;
 
         if left_child_value.is_some() && left_child_value > largest_value {
@@ -160,7 +163,7 @@ where
         }
 
         if largest_index != start_index {
-            self.heap.swap(start_index, largest_index);
+            self.items.swap(start_index, largest_index);
             self.sift_down(largest_index)
         }
     }
